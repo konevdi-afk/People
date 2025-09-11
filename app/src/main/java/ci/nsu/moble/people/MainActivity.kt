@@ -9,8 +9,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -53,29 +57,28 @@ fun ColorChangingButton(modifier: Modifier = Modifier) {
     var errorMessage by remember { mutableStateOf("") }
     var showError by remember { mutableStateOf(false) }
 
+    // Список доступных цветов
+    val availableColors = listOf(
+        "Red" to Color.Red,
+        "Green" to Color.Green,
+        "Blue" to Color.Blue,
+        "Yellow" to Color.Yellow,
+        "Cyan" to Color.Cyan,
+        "Magenta" to Color.Magenta,
+        "Black" to Color.Black,
+        "White" to Color.White,
+        "Gray" to Color.Gray
+    )
+
     // Функция для проверки корректности цвета
     fun isValidColor(colorName: String): Boolean {
-        return when (colorName.trim().lowercase()) {
-            "red", "green", "blue", "yellow",
-            "cyan", "magenta", "black", "white", "gray" -> true
-            else -> false
-        }
+        return availableColors.any { it.first.equals(colorName.trim(), ignoreCase = true) }
     }
 
     // Функция для преобразования текста в цвет
     fun parseColor(colorName: String): Color {
-        return when (colorName.trim().lowercase()) {
-            "red" -> Color.Red
-            "green" -> Color.Green
-            "blue" -> Color.Blue
-            "yellow" -> Color.Yellow
-            "cyan" -> Color.Cyan
-            "magenta" -> Color.Magenta
-            "black" -> Color.Black
-            "white" -> Color.White
-            "gray" -> Color.Gray
-            else -> Color.Blue // По умолчанию
-        }
+        return availableColors.find { it.first.equals(colorName.trim(), ignoreCase = true) }
+            ?.second ?: Color.Blue
     }
 
     Column(
@@ -85,6 +88,14 @@ fun ColorChangingButton(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Заголовок
+        Text(
+            text = "Изменение цвета кнопки",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
         // Текстовое поле для ввода цвета
         TextField(
             value = colorText,
@@ -94,7 +105,7 @@ fun ColorChangingButton(modifier: Modifier = Modifier) {
                 showError = false
                 errorMessage = ""
             },
-            label = { Text("Введите цвет (Red, Green, Blue, etc.)") },
+            label = { Text("Введите название цвета") },
             modifier = Modifier
                 .width(300.dp)
                 .padding(bottom = 16.dp),
@@ -109,16 +120,9 @@ fun ColorChangingButton(modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(bottom = 8.dp),
                 fontWeight = FontWeight.Bold
             )
-
-            Text(
-                text = "Доступные цвета: Red, Green, Blue, Yellow, Cyan, Magenta, Black, White, Gray",
-                color = Color.Gray,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
         }
 
-        // Кнопка, меняющая цвет - ТЕПЕРЬ ЦВЕТ ПРИМЕНЯЕТСЯ!
+        // Кнопка, меняющая цвет
         Button(
             onClick = {
                 if (colorText.isBlank()) {
@@ -134,10 +138,56 @@ fun ColorChangingButton(modifier: Modifier = Modifier) {
                     errorMessage = ""
                 }
             },
-            modifier = Modifier.width(200.dp),
+            modifier = Modifier
+                .width(200.dp)
+                .padding(bottom = 24.dp),
             colors = ButtonDefaults.buttonColors(containerColor = buttonColor)
         ) {
             Text("Изменить цвет", color = Color.White)
+        }
+
+        // Список доступных цветов
+        Text(
+            text = "Доступные цвета:",
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        LazyColumn(
+            modifier = Modifier
+                .width(300.dp)
+                .padding(top = 8.dp)
+        ) {
+            items(availableColors.chunked(2)) { rowColors ->
+                Column(
+                    modifier = Modifier.padding(bottom = 8.dp)
+                ) {
+                    AvailableColorsRow(colors = rowColors)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AvailableColorsRow(colors: List<Pair<String, Color>>) {
+    Column {
+        colors.forEach { (colorName, color) ->
+            Card(
+                modifier = Modifier
+                    .padding(vertical = 4.dp)
+                    .width(300.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = color,
+                    contentColor = if (color == Color.Black || color == Color.Blue) Color.White else Color.Black
+                )
+            ) {
+                Text(
+                    text = colorName,
+                    modifier = Modifier.padding(12.dp),
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
     }
 }
